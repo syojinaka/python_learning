@@ -36,9 +36,23 @@ class NeuralNetwork:
         return self.neuron.getOutput()
 
 
+# 基準点(データの範囲を0.0-1.0の範囲に収めるため）
+refer_point_0 = 34.5
+refer_point_1 = 137.5
+
+# ファイルの読み込み
+trial_data = []
+trial_data_file = open("trial_data.txt", "r")
+for line in trial_data_file:
+    line = line.rstrip().split(",")
+    trial_data.append([float(line[0])-refer_point_0, float(line[1])-refer_point_1])
+trial_data_file.close()
+
+print(trial_data)
+
 # ニューラルネットワークのインスタンス
 neural_network = NeuralNetwork()
 
 # 実行
 trial_data = [1.0, 2.0, 3.0]
-print(neural_network.commit(trial_data))
+# print(neural_network.commit(trial_data))

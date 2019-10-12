@@ -29,13 +29,10 @@ class Neuron:
 # ニューラルネットワーク
 class NeuralNetwork:
     # 入力の重み
-    w_im = [[0.496, 0.512], [-0.501, 0.998], [0.498, -0.502]]
+    w_im = [[0.496, 0.512],[-0.501, 0.998],[0.498, -0.502]]
     w_mo = [0.121,  -0.4996, 0.200]
 
     # 各層の宣言
-    # inputの初期値を数値として格納しておく
-    # のちに、学習データの2つの値が格納される
-    # 1.0はバイアス
     input_layer = [0.0, 0.0, 1.0]
     middle_layer = [Neuron(), Neuron(), 1.0]
     output_layer = Neuron()
@@ -65,8 +62,37 @@ class NeuralNetwork:
         self.output_layer.setInput(self.middle_layer[1].getOutput() * self.w_mo[1])
         self.output_layer.setInput(self.middle_layer[2] * self.w_mo[2])
 
-
         return self.output_layer.getOutput()
+
+    def learn(self, input_data):
+        print(input_data)
+
+        # 出力値
+        output_data = self.commit([input_data[0], input_data[1]])
+        # 正解値
+        correct_value = input_data[2]
+
+        # 学習係数
+        k = 0.3
+
+        # 出力層⇒中間層
+        delta_w_mo = (correct_value - output_data) * output_data * (1.0 - output_data)
+        old_w_mo = list(self.w_mo)
+        self.w_mo[0] += self.middle_layer[0].output * delta_w_mo * k
+        self.w_mo[1] += self.middle_layer[1].output * delta_w_mo * k
+        self.w_mo[2] += self.middle_layer[2] * delta_w_mo * k
+
+        # 中間層⇒入力層
+        delta_w_im = [
+            delta_w_mo * old_w_mo[0] * self.middle_layer[0].output + (1.0 - self.middle_layer[0].output),
+            delta_w_mo * old_w_mo[1] * self.middle_layer[1].output + (1.0 - self.middle_layer[1].output)
+        ]
+        self.w_im[0][0] += self.input_layer[0] * delta_w_im[0] * k
+        self.w_im[0][1] += self.input_layer[0] * delta_w_im[1] * k
+        self.w_im[1][0] += self.input_layer[1] * delta_w_im[0] * k
+        self.w_im[1][1] += self.input_layer[1] * delta_w_im[1] * k
+        self.w_im[2][0] += self.input_layer[2] * delta_w_im[0] * k
+        self.w_im[2][1] += self.input_layer[2] * delta_w_im[1] * k
 
 
 # 基準点(データの範囲を0.0-1.0の範囲に収めるため）
@@ -85,9 +111,14 @@ training_data_file.close()
 # ニューラルネットワークのインスタンス
 neural_network = NeuralNetwork()
 
+# 学習
+neural_network.learn(training_data[0])
+print(neural_network.w_im)
+print(neural_network.w_mo)
+
 # 実行
 position_tokyo_learning = [[],[]]
-position_kanagawa_learning  = [[],[]]
+position_kanagawa_learning = [[],[]]
 for data in training_data:
     if data[2] < 0.5:
         position_tokyo_learning[0].append(data[1] + refer_point_1)  # 経度
